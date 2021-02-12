@@ -67,19 +67,17 @@ fi
 # The configure option '--with-macosx-codesign-identity' is supported in JDK8 OpenJ9 and JDK11 and JDK14+
 if [[ ( "$JAVA_FEATURE_VERSION" -eq 11 ) || ( "$JAVA_FEATURE_VERSION" -ge 14 ) ]]
 then
-  export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/"
-  ## Login to KeyChain
-  ## shellcheck disable=SC2046
-  ## shellcheck disable=SC2006
+  #export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/"
+  export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM}"
+  # Login to KeyChain
+  # shellcheck disable=SC2046
+  # shellcheck disable=SC2006
   #security unlock-keychain -p `cat ~/.password` login.keychain-db
-  #rm -rf codesign-test && touch codesign-test
-  #codesign --sign "Developer ID Application: London Jamocha Community CIC" codesign-test
-  #codesign -dvvv codesign-test
   #export BUILD_ARGS="${BUILD_ARGS} --codesign-identity 'Developer ID Application: London Jamocha Community CIC'"
 fi
 
 echo "[WARNING] You may be asked for your su user password, attempting to switch Xcode version to ${XCODE_SWITCH_PATH}"
-sudo xcode-select --switch "${XCODE_SWITCH_PATH}"
+#sudo xcode-select --switch "${XCODE_SWITCH_PATH}"
 
 # No MacOS builds available of OpenJDK 7, OpenJDK 8 can boot itself just fine.
 if [ "${JDK_BOOT_VERSION}" == "7" ]; then
