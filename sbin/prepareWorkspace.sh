@@ -289,7 +289,10 @@ updateDragonwellSources() {
 # Clone the git repo
 cloneOpenJDKGitRepo() {
   setGitCloneArguments
-
+  echo "Add Github.ibm.com to known_hosts"
+  mkdir -p ~/.ssh
+  #ssh-keyscan -t rsa github.ibm.com >> ~/.ssh/known_hosts
+  echo "github.ibm.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1K6pnwsCh8hFCqvzWkb1y3ajXervgfokIdZ/VIURIItVBIINtH5Ynupt2cLLBMYysYjR1I/P4VNZf7bX+HejjJqMf92psXQ1VToyKeNZ+i01CrhZko11157veidnMwVmKoCIdrKpsLgqthJ6kXLrTqaVIQ1sh3lKZ0tFRsqgiwNbstwhRZe/MyUoDuzHZQPooxsiy5dBO+LpkovCShwVfZ3380UyAfScPrUZcX2zY/qmGDz4puXOWj/CQupoe76JoVenfwrjfTw2I+GoPxpZK6R47akoAekCO+Dw8VW4NnTDR6L7eGkclltQSC7HQ9MiFDB4Z49ONWQwotLdttDr5" >> ~/.ssh/known_hosts
   echo "git clone ${GIT_CLONE_ARGUMENTS[*]}"
   git clone "${GIT_CLONE_ARGUMENTS[@]}"
 }
