@@ -1414,7 +1414,7 @@ if [[ "${BUILD_CONFIG[ASSEMBLE_EXPLODED_IMAGE]}" == "true" ]]; then
   removingUnnecessaryFiles
   copyFreeFontForMacOS
   setPlistForMacOS
-  addNoticeFile
+  #addNoticeFile
   createOpenJDKTarArchive
   exit 0
 fi
@@ -1441,7 +1441,7 @@ if [[ "${BUILD_CONFIG[MAKE_EXPLODED]}" != "true" ]]; then
   removingUnnecessaryFiles
   copyFreeFontForMacOS
   setPlistForMacOS
-  addNoticeFile
+  #addNoticeFile
   createOpenJDKTarArchive
 fi
 
