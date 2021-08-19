@@ -148,6 +148,24 @@ signRelease()
         echo "$FILES" | while read -r f; do codesign --entitlements "$ENTITLEMENTS" --options runtime --timestamp --sign "Developer ID Application: XXX" "$f"; done
       fi
       ;;
+
+    "aix" | "linux")
+      echo "Signing Linux release"
+
+      # Sign all executables files in bin and lib and all shared libraries
+      FILES=$(find . -type f -executable -o -name *.so )
+
+      if [ "$SIGN_TOOL" = "ucl" ]; then
+        for f in $FILES
+        do
+            echo "Signing ${f}"
+            ucl sign --hash SHA256 -n WindowsSHA -i "${f}" -o "${f}.sig"
+        done
+      else
+        echo "Unknow $SIGN_TOOL, skipping code signing on $OPERATING_SYSTEM"
+      fi
+      ;;
+
     *)
       echo "Skipping code signing as it's not supported on $OPERATING_SYSTEM"
       ;;
@@ -162,22 +180,32 @@ function parseArguments() {
   done
 
   ARCHIVE="$1";
+  SIGNING_CERTIFICATE=""
+
+  if [[ $# -ge 2 ]]; then
+    SIGNING_CERTIFICATE="$2";
+  fi
 }
 
 function extractArchive {
   rm -rf "${TMP_DIR}" || true
   mkdir "${TMP_DIR}"
-  if [[ "${OPERATING_SYSTEM}" == "windows" ]]; then
-    unzip -q "${ARCHIVE}" -d "${TMP_DIR}"
-  elif [[ "${OPERATING_SYSTEM}" == "mac" ]]; then
-    gunzip -dc "${ARCHIVE}" | tar xf - -C "${TMP_DIR}"
-  else
-    echo "could not detect archive type"
-    exit 1
-  fi
+
+  case "$OPERATING_SYSTEM" in
+    "aix" | "linux" | "mac")
+        gunzip -dc "${ARCHIVE}" | tar xf - -C "${TMP_DIR}"
+        ;;
+    "windows")
+        unzip -q "${ARCHIVE}" -d "${TMP_DIR}"
+        ;;
+    *)
+        echo "could not detect archive type"
+        exit 1
+        ;;
+  esac
 }
 
-if [ "${OPERATING_SYSTEM}" != "windows" ] && [ "${OPERATING_SYSTEM}" != "mac" ]; then
+if [ "${OPERATING_SYSTEM}" != "windows" ] && [ "${OPERATING_SYSTEM}" != "mac" ] && [ "${OPERATING_SYSTEM}" != "linux" ] && [ "${OPERATING_SYSTEM}" != "aix" ]; then
   echo "Skipping code signing as it's not supported on ${OPERATING_SYSTEM}"
   exit 0;
 fi
@@ -205,4 +233,13 @@ signedArchive="${TMP_DIR}/OpenJDK${archiveExtension}"
 
 cd "${WORKSPACE}"
 mv "${signedArchive}" "${ARCHIVE}"
+
+if ([ "$OPERATING_SYSTEM" = "aix" ] || [ "$OPERATING_SYSTEM" = "linux" ]) && [ "$SIGN_TOOL" = "ucl" ]; then
+  # sign the tarball
+  echo "Sign archive ${ARCHIVE}"
+  ucl sign --hash SHA256 -n WindowsSHA -i "${ARCHIVE}" -o "${ARCHIVE}.sig"
+else
+  echo "Skipping code signing of archive ${ARCHIVE} as ${SIGN_TOOL} is unsupported on ${OPERATING_SYSTEM}"
+fi
+
 rm -rf "${TMP_DIR}"

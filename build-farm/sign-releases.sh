@@ -21,14 +21,18 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export SIGN_TOOL
 export OPERATING_SYSTEM
 
-if [ "${OPERATING_SYSTEM}" == "mac" ] ; then
-  EXTENSION="tar.gz"
-elif [ "${OPERATING_SYSTEM}" == "windows" ] ; then
-  EXTENSION="zip"
-else
-  echo "OS does not need signing ${OPERATING_SYSTEM}"
-  exit 0
-fi
+case "$OPERATING_SYSTEM" in
+    "aix" | "linux" | "mac")
+      EXTENSION="tar.gz"
+      ;;
+    "windows")
+      EXTENSION="zip"
+      ;;
+    *)
+      echo "OS does not need signing ${OPERATING_SYSTEM}"
+      exit 0
+      ;;
+esac
 
 echo "files:"
 ls -alh workspace/target/
@@ -44,7 +48,7 @@ do
       echo "signing ${file}"
 
       # shellcheck disable=SC2086
-      bash "${SCRIPT_DIR}/../sign.sh" "${file}"
+      bash "${SCRIPT_DIR}/../sign.sh" "${file}" ${CERTIFICATE}
     ;;
   esac
 done
