@@ -21,7 +21,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export SIGN_TOOL
 export OPERATING_SYSTEM
 
-if [ "${OPERATING_SYSTEM}" == "mac" ] ; then
+if [ "${OPERATING_SYSTEM}" == "mac" ] || [ "${OPERATING_SYSTEM}" == "linux" ] ; then
   EXTENSION="tar.gz"
 elif [ "${OPERATING_SYSTEM}" == "windows" ] ; then
   EXTENSION="zip"
@@ -44,7 +44,7 @@ do
       echo "signing ${file}"
 
       # shellcheck disable=SC2086
-      bash "${SCRIPT_DIR}/../sign.sh" "${file}"
+      bash "${SCRIPT_DIR}/../sign.sh" "${file}" ${CERTIFICATE}
     ;;
   esac
 done
