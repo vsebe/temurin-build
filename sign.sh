@@ -157,12 +157,11 @@ signRelease()
 function parseArguments() {
   parseConfigurationArguments "$@"
 
-  while [[ $# -gt 2 ]] ; do
+  while [[ $# -gt 1 ]] ; do
     shift;
   done
 
-  SIGNING_CERTIFICATE="$1";
-  ARCHIVE="$2";
+  ARCHIVE="$1";
 }
 
 function extractArchive {
