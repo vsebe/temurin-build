@@ -47,8 +47,13 @@ do
     *)
       echo "signing ${file}"
 
+      if [ "${SIGN_TOOL}" = "ucl" ] && [ -z "${CERTIFICATE}" ]; then
+        echo "You must set CERTIFICATE!"
+        exit 1
+      fi
+
       # shellcheck disable=SC2086
-      bash "${SCRIPT_DIR}/../sign.sh" "${file}" ${CERTIFICATE}
+      bash "${SCRIPT_DIR}/../sign.sh" ${CERTIFICATE} "${file}"
     ;;
   esac
 done

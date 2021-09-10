@@ -89,7 +89,7 @@ signRelease()
             if [ "$STAMPED" = "false" ]; then
               echo "Signing $f using $SERVER"
               if [ "$SIGN_TOOL" = "ucl" ]; then
-                ucl sign-code --file "$f" -n WindowsSHA -t "${SERVER}" --hash SHA256
+                ucl sign-code --file "$f" -n ${SIGNING_CERTIFICATE} -t "${SERVER}" --hash SHA256
               else
                 "$signToolPath" sign /f "${SIGNING_CERTIFICATE}" /p "$SIGN_PASSWORD" /fd SHA256 /t "${SERVER}" "$f"
               fi
@@ -159,7 +159,7 @@ signRelease()
         for f in $FILES
         do
             echo "Signing ${f}"
-            ucl sign --hash SHA256 -n WindowsSHA -i "${f}" -o "${f}.sig"
+            ucl sign --hash SHA256 -n ${SIGNING_CERTIFICATE} -i "${f}" -o "${f}.sig"
         done
       else
         echo "Unknow $SIGN_TOOL, skipping code signing on $OPERATING_SYSTEM"
@@ -175,16 +175,12 @@ signRelease()
 function parseArguments() {
   parseConfigurationArguments "$@"
 
-  while [[ $# -gt 1 ]] ; do
+  while [[ $# -gt 2 ]] ; do
     shift;
   done
 
-  ARCHIVE="$1";
-  SIGNING_CERTIFICATE=""
-
-  if [[ $# -ge 2 ]]; then
-    SIGNING_CERTIFICATE="$2";
-  fi
+  SIGNING_CERTIFICATE="$1";
+  ARCHIVE="$2";
 }
 
 function extractArchive {
@@ -237,7 +233,7 @@ mv "${signedArchive}" "${ARCHIVE}"
 if ([ "$OPERATING_SYSTEM" = "aix" ] || [ "$OPERATING_SYSTEM" = "linux" ]) && [ "$SIGN_TOOL" = "ucl" ]; then
   # sign the tarball
   echo "Sign archive ${ARCHIVE}"
-  ucl sign --hash SHA256 -n WindowsSHA -i "${ARCHIVE}" -o "${ARCHIVE}.sig"
+  ucl sign --hash SHA256 -n ${SIGNING_CERTIFICATE} -i "${ARCHIVE}" -o "${ARCHIVE}.sig"
 else
   echo "Skipping code signing of archive ${ARCHIVE} as ${SIGN_TOOL} is unsupported on ${OPERATING_SYSTEM}"
 fi
