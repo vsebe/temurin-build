@@ -331,7 +331,7 @@ configureVersionStringParameter() {
       # Not a release build so add date suffix
       derivedOpenJdkMetadataVersion="${derivedOpenJdkMetadataVersion}-${dateSuffix}"
     fi
-    addConfigureArg "--with-vendor-version-string=" "${BUILD_CONFIG[VENDOR_VERSION]:-"Temurin"}-${derivedOpenJdkMetadataVersion}"
+    addConfigureArg "--with-vendor-version-string=" "${BUILD_CONFIG[VENDOR_VERSION]:-}${derivedOpenJdkMetadataVersion}"
   fi
 
   echo "Completed configuring the version string parameter, config args are now: ${CONFIGURE_ARGS}"
