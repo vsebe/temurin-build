@@ -443,7 +443,7 @@ downloadFile() {
        echo ERROR: Failed to download "${url}" - exiting
        exit 2
     fi
-  elif ! curl --fail -L -o "${targetFileName}" "${url}"; then
+  elif ! curl --fail -kL -o "${targetFileName}" "${url}"; then
     echo ERROR: Failed to download "${url}" - exiting
     exit 2
   fi
