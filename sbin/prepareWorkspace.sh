@@ -579,7 +579,8 @@ downloadingRequiredDependencies() {
       echo "Windows or Windows-like environment detected, skipping download of dependency Freemarker."
     else
       echo "Checking and downloading Freemarker dependency"
-      checkingAndDownloadingFreemarker
+      echo "Temp skip freemarker download"
+      #checkingAndDownloadingFreemarker
     fi
   fi
 
