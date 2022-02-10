@@ -39,9 +39,7 @@ else
   fi
   export PATH="/Users/jenkins/ccache-3.2.4:$PATH"
   if [ "${VARIANT}" == "${BUILD_VARIANT_OPENJ9}" ]; then
-    if [ "${ARCHITECTURE}" == "x64" ]; then
-      export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-openssl=fetched --enable-openssl-bundling"
-    fi
+    export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-openssl=fetched --enable-openssl-bundling"
   else
     if [ "${ARCHITECTURE}" == "x64" ]; then
       # We can only target 10.9 on intel macs
