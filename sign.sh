@@ -229,8 +229,8 @@ signedArchive="${TMP_DIR}/OpenJDK${archiveExtension}"
 cd "${WORKSPACE}"
 mv "${signedArchive}" "${ARCHIVE}"
 
-if ([ "$OPERATING_SYSTEM" = "aix" ] || [ "$OPERATING_SYSTEM" = "linux" ]) && [ "$SIGN_TOOL" = "ucl" ]; then
-  # sign the tarball
+if ([ "$OPERATING_SYSTEM" = "aix" ] || [ "$OPERATING_SYSTEM" = "linux" ] || [ "$OPERATING_SYSTEM" = "windows" ] || [ "$OPERATING_SYSTEM" = "mac" ]) && [ "$SIGN_TOOL" = "ucl" ]; then
+  # sign the tarball/zip
   echo "Sign archive ${ARCHIVE}"
   ucl sign --hash SHA256 -n ${SIGNING_CERTIFICATE} -i "${ARCHIVE}" -o "${ARCHIVE}.sig"
 else
