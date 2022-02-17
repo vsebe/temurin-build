@@ -109,62 +109,6 @@ signRelease()
         fi
       done
     ;;
-
-    "mac"*)
-      # TODO: Remove this completly once https://github.com/adoptium/openjdk-jdk11u/commit/b3250adefed0c1778f38a7e221109ae12e7c421e has been backported to JDK8u
-      echo "Signing OSX release"
-
-      ENTITLEMENTS="$WORKSPACE/entitlements.plist"
-      # Sign all files with the executable permission bit set.
-      FILES=$(find "${TMP_DIR}" -perm +111 -type f -o -name '*.dylib'  -type f || find "${TMP_DIR}" -perm /111 -type f -o -name '*.dylib'  -type f)
-
-      if [ "$SIGN_TOOL" = "eclipse" ]; then
-        for f in $FILES
-        do
-          echo "Signing $f using Eclipse Foundation codesign service"
-          dir=$(dirname "$f")
-          file=$(basename "$f")
-          mv "$f" "${dir}/unsigned_${file}"
-          curl --fail --silent --show-error -o "$f" -F file="@${dir}/unsigned_${file}" -F entitlements="@$ENTITLEMENTS" https://cbi.eclipse.org/macos/codesign/sign
-          chmod --reference="${dir}/unsigned_${file}" "$f"
-          rm -rf "${dir}/unsigned_${file}"
-        done
-        JDK_DIR=$(ls -d "${TMP_DIR}"/jdk*)
-        JDK=$(basename "${JDK_DIR}") 
-        cd "${TMP_DIR}"
-        zip -q -r "${TMP_DIR}/unsigned.zip" "${JDK}"
-        cd -
-        curl --fail --silent --show-error -o "${TMP_DIR}/signed.zip" -F file="@${TMP_DIR}/unsigned.zip" https://cbi.eclipse.org/macos/codesign/sign
-        rm -rf "${JDK_DIR}"
-        unzip -q -d "${TMP_DIR}" "${TMP_DIR}/signed.zip"
-      else
-        # Login to KeyChain
-        # shellcheck disable=SC2046
-        # shellcheck disable=SC2006
-        security unlock-keychain -p `cat ~/.password` login.keychain-db
-        xattr -cr .
-        # If you're using this script, make sure to update the certificate with your developer application ID
-        echo "$FILES" | while read -r f; do codesign --entitlements "$ENTITLEMENTS" --options runtime --timestamp --sign "Developer ID Application: XXX" "$f"; done
-      fi
-      ;;
-
-    "aix" | "linux")
-      echo "Signing Linux release"
-
-      # Sign all executables files in bin and lib and all shared libraries
-      FILES=$(find . -type f -executable -o -name *.so )
-
-      if [ "$SIGN_TOOL" = "ucl" ]; then
-        for f in $FILES
-        do
-            echo "Signing ${f}"
-            ucl sign --hash SHA256 -n ${SIGNING_CERTIFICATE} -i "${f}" -o "${f}.sig"
-        done
-      else
-        echo "Unknow $SIGN_TOOL, skipping code signing on $OPERATING_SYSTEM"
-      fi
-      ;;
-
     *)
       echo "Skipping code signing as it's not supported on $OPERATING_SYSTEM"
       ;;
