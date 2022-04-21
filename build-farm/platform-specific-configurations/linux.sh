@@ -191,6 +191,11 @@ elif [ "$JAVA_FEATURE_VERSION" -ge 17 ] && [ "${VARIANT}" != "${BUILD_VARIANT_OP
 elif [ "$JAVA_FEATURE_VERSION" -gt 17 ] && [ "${VARIANT}" != "${BUILD_VARIANT_OPENJ9}" ] && [ -r /usr/bin/gcc-10 ]; then
   [ -r /usr/bin/gcc-10 ] && export  CC=/usr/bin/gcc-10
   [ -r /usr/bin/g++-10 ] && export CXX=/usr/bin/g++-10
+elif [ "$JAVA_FEATURE_VERSION" -ge 19 ] && [ "${VARIANT}" == "${BUILD_VARIANT_OPENJ9}" ] && [ -r /usr/local/gcc11/bin/gcc-11.2 ]; then
+  export PATH=/usr/local/gcc11/bin:$PATH
+  [ -r /usr/local/gcc11/bin/gcc-11.2 ] && export CC=/usr/local/gcc11/bin/gcc-11.2
+  [ -r /usr/local/gcc11/bin/g++-11.2 ] && export CXX=/usr/local/gcc11/bin/g++-11.2
+  export LD_LIBRARY_PATH=/usr/local/gcc11/lib64:/usr/local/gcc11/lib
 # Continue to use GCC 7 if present for JDK<=17 and where 10 does not exist
 elif [ -r /usr/local/gcc/bin/gcc-7.5 ]; then
   export PATH=/usr/local/gcc/bin:$PATH
