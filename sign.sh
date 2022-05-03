@@ -151,27 +151,27 @@ fi
 
 configDefaults
 parseArguments "$@"
-extractArchive
 
 if [ "${OPERATING_SYSTEM}" = "windows" ]; then
+  extractArchive
   # this is because the windows signing is performed by a Linux machine now. It needs this variable set to know to create a zipfile instead of a tarball
   BUILD_CONFIG[OS_KERNEL_NAME]="cygwin"
+
+  # Set jdkDir to the top level directory from the tarball/zipball
+  # shellcheck disable=SC2012
+  jdkDir=$(ls -1 "${TMP_DIR}" | head -1 | xargs basename)
+
+  cd "${TMP_DIR}/${jdkDir}" || exit 1
+  signRelease
+
+  cd "${TMP_DIR}"
+  createOpenJDKArchive "${jdkDir}" "OpenJDK"
+  archiveExtension=$(getArchiveExtension)
+  signedArchive="${TMP_DIR}/OpenJDK${archiveExtension}"
+
+  cd "${WORKSPACE}"
+  mv "${signedArchive}" "${ARCHIVE}"
 fi
-
-# Set jdkDir to the top level directory from the tarball/zipball
-# shellcheck disable=SC2012
-jdkDir=$(ls -1 "${TMP_DIR}" | head -1 | xargs basename)
-
-cd "${TMP_DIR}/${jdkDir}" || exit 1
-signRelease
-
-cd "${TMP_DIR}"
-createOpenJDKArchive "${jdkDir}" "OpenJDK"
-archiveExtension=$(getArchiveExtension)
-signedArchive="${TMP_DIR}/OpenJDK${archiveExtension}"
-
-cd "${WORKSPACE}"
-mv "${signedArchive}" "${ARCHIVE}"
 
 if ([ "$OPERATING_SYSTEM" = "aix" ] || [ "$OPERATING_SYSTEM" = "linux" ] || [ "$OPERATING_SYSTEM" = "windows" ] || [ "$OPERATING_SYSTEM" = "mac" ]) && [ "$SIGN_TOOL" = "ucl" ]; then
   # sign the tarball/zip
