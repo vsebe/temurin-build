@@ -76,6 +76,11 @@ MAKE_ARGS_FOR_ANY_PLATFORM
 MAKE_EXPLODED
 MAKE_COMMAND_NAME
 NUM_PROCESSORS
+OMR_REPOSITORY
+OMR_BRANCH
+OPENJ9_REPOSITORY
+OPENJ9_BRANCH
+OPENSSL_VERSION
 OPENJDK_BUILD_NUMBER
 OPENJDK_CORE_VERSION
 OPENJDK_FEATURE_NUMBER
@@ -294,6 +299,21 @@ function parseConfigurationArguments() {
 
         "--no-adopt-patches" )
         BUILD_CONFIG[ADOPT_PATCHES]=false;;
+
+        "--omr-repository" )
+        BUILD_CONFIG[OMR_REPOSITORY]="$1"; shift;;
+
+        "--omr-branch" )
+        BUILD_CONFIG[OMR_BRANCH]="$1"; shift;;
+
+        "--openj9-repository" )
+        BUILD_CONFIG[OPENJ9_REPOSITORY]="$1"; shift;;
+
+        "--openj9-branch" )
+        BUILD_CONFIG[OPENJ9_BRANCH]="$1"; shift;;
+
+        "--openssl-version" )
+         BUILD_CONFIG[OPENSSL_VERSION]="$1"; shift;;
 
         "--patches" )
         BUILD_CONFIG[PATCHES]="$1"; shift;;
@@ -576,6 +596,13 @@ function configDefaults() {
 
   # Used in 'release' file for jdk8u
   BUILD_CONFIG[VENDOR]=${BUILD_CONFIG[VENDOR]:-"Undefined Vendor"}
+
+  # OpenJ9 sources
+  BUILD_CONFIG[OMR_REPOSITORY]=${BUILD_CONFIG[OMR_REPOSITORY]:-""}
+  BUILD_CONFIG[OMR_BRANCH]=${BUILD_CONFIG[OMR_BRANCH]:-""}
+  BUILD_CONFIG[OPENJ9_REPOSITORY]=${BUILD_CONFIG[OPENJ9_REPOSITORY]:-""}
+  BUILD_CONFIG[OPENJ9_BRANCH]=${BUILD_CONFIG[OPENJ9_BRANCH]:-""}
+  BUILD_CONFIG[OPENSSL_VERSION]=${BUILD_CONFIG[OPENSSL_VERSION]:-"1.1.1n"}
 }
 
 # Declare the map of build configuration that we're going to use
