@@ -102,6 +102,7 @@ signRelease()
                 else
                   echo "RETRYWARNING: Failed to sign ${f} at $(date +%T): Possible timestamp server error at ${SERVER} - Trying new server in 5 seconds"
                   sleep 2
+                fi
               fi
             done
             if [ "$STAMPED" = "false" ]; then
