@@ -630,8 +630,8 @@ buildCyclonedxLib() {
     javaHome=${JDK8_BOOT_DIR}
   elif [ ${JDK11_BOOT_DIR+x} ] && [ -d "${JDK11_BOOT_DIR}" ]; then
     javaHome=${JDK11_BOOT_DIR}
-  elif [ ${JDK_BOOT_DIR+x} ] && [ -d "${JDK_BOOT_DIR}" ]; then # fall back to use JDK_BOOT_DIR which is set in make-adopt-build-farm.sh
-    javaHome=${JDK_BOOT_DIR}
+  elif [ ${BUILD_CONFIG[JDK_BOOT_DIR]+x} ] && [ -d "${BUILD_CONFIG[JDK_BOOT_DIR]}" ]; then # fall back to use JDK_BOOT_DIR which is set in make-adopt-build-farm.sh
+    javaHome="${BUILD_CONFIG[JDK_BOOT_DIR]}"
   else
     echo "Unable to find a suitable JAVA_HOME to build the cyclonedx-lib"
     exit 2
@@ -657,6 +657,8 @@ generateSBoM() {
     javaHome=${JDK8_BOOT_DIR}
   elif [ ${JDK11_BOOT_DIR+x} ] && [ -d "${JDK11_BOOT_DIR}" ]; then
     javaHome=${JDK11_BOOT_DIR}
+  elif [ ${BUILD_CONFIG[JDK_BOOT_DIR]+x} ] && [ -d "${BUILD_CONFIG[JDK_BOOT_DIR]}" ]; then # fall back to use JDK_BOOT_DIR which is set in make-adopt-build-farm.sh
+    javaHome="${BUILD_CONFIG[JDK_BOOT_DIR]}"
   else
     echo "Unable to find a suitable JAVA_HOME to run the TemurinGenSBOM app"
     exit 2
