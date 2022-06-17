@@ -44,7 +44,7 @@ if [ ! -d "$(eval echo "\$$BOOT_JDK_VARIABLE")" ]; then
       echo "Could not use ${BOOT_JDK_VARIABLE} - using /cygdrive/c/openjdk/jdk-${JDK_BOOT_VERSION}"
       # shellcheck disable=SC2140
       export "${BOOT_JDK_VARIABLE}"="/cygdrive/c/openjdk/jdk-${JDK_BOOT_VERSION}"
-    elif [ "$JDK_BOOT_VERSION" -ge 8 ]; then # Adopt has no build pre-8
+    elif [ "$JDK_BOOT_VERSION" -ge 8 ]; then # Adoptium has no build pre-8
       # This is needed to convert x86-32 to x32 which is what the API uses
       export downloadArch
       case "$ARCHITECTURE" in
@@ -201,28 +201,15 @@ then
     # NASM required for OpenSSL support as per #604
     export PATH="/cygdrive/c/Program Files/LLVM/bin:/usr/bin:/cygdrive/c/openjdk/nasm-$OPENJ9_NASM_VERSION:$PATH"
   else
-    TOOLCHAIN_VERSION="2013"
+    TOOLCHAIN_VERSION="2017"
+    export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
     if [ "${JAVA_TO_BUILD}" == "${JDK8_VERSION}" ]
     then
-      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.5.3"
+      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.8.1"
       export PATH="/cygdrive/c/openjdk/make-3.82/:$PATH"
-      export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
-    elif [ "${JAVA_TO_BUILD}" == "${JDK9_VERSION}" ]
-    then
-      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.5.3"
-      export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
-    elif [ "${JAVA_TO_BUILD}" == "${JDK10_VERSION}" ]
-    then
-      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.5.3"
-      export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
-    elif [ "${JAVA_TO_BUILD}" == "${JDK11_VERSION}" ]
-    then
-      TOOLCHAIN_VERSION="2017"
-      export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
     elif [ "$JAVA_FEATURE_VERSION" -gt 11 ]
     then
       TOOLCHAIN_VERSION="2019"
-      export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
     fi
   fi
 

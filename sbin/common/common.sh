@@ -41,15 +41,15 @@ function setOpenJdkVersion() {
     retryMax=5
     until [ "$retryCount" -ge "$retryMax" ]
     do
-        # Use Adopt API to get the JDK Head number
-        echo "This appears to be JDK Head. Querying the Adopt API to get the JDK HEAD Number (https://api.adoptium.net/v3/info/available_releases)..."
+        # Use Adoptium API to get the JDK Head number
+        echo "This appears to be JDK Head. Querying the Adoptium API to get the JDK HEAD Number (https://api.adoptium.net/v3/info/available_releases)..."
         local featureNumber=$(curl -q -k https://api.adoptium.net/v3/info/available_releases | awk '/tip_version/{print$2}')
-        
+
         # Checks the api request was successful and the return value is a number
         if [ -z "${featureNumber}" ] || ! [[ "${featureNumber}" -gt 0 ]]
         then
             echo "RETRYWARNING: Query ${retryCount} failed. Retrying in 30 seconds (max retries = ${retryMax})..."
-            retryCount=$((retryCount+1)) 
+            retryCount=$((retryCount+1))
             sleep 30s
         else
             echo "featureNumber FOUND: ${featureNumber}" && break
