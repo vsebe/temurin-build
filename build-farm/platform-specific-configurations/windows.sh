@@ -160,7 +160,7 @@ then
       export INCLUDE="C:\Program Files\Debugging Tools for Windows (x64)\sdk\inc;$INCLUDE"
       export PATH="$PATH:/c/cygwin64/bin"
       export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
-      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.9.2"
+      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.9.1"
       TOOLCHAIN_VERSION="2017"
     elif [ "${JAVA_TO_BUILD}" == "${JDK9_VERSION}" ]
     then
