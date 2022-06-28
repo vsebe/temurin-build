@@ -117,7 +117,7 @@ then
     export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-openssl=fetched --enable-openssl-bundling"
     if [ "${JAVA_TO_BUILD}" == "${JDK8_VERSION}" ]
     then
-      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.5.3"
+      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.9.1"
       export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-freemarker-jar=/cygdrive/c/openjdk/freemarker.jar"
       # https://github.com/adoptium/temurin-build/issues/243
       export INCLUDE="C:\Program Files\Debugging Tools for Windows (x64)\sdk\inc;$INCLUDE"
@@ -152,7 +152,6 @@ then
   if [ "${VARIANT}" == "${BUILD_VARIANT_OPENJ9}" ]
   then
     export HAS_AUTOCONF=1
-    export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.5.3"
     export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-openssl=fetched --enable-openssl-bundling"
     export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --with-freemarker-jar=/cygdrive/c/openjdk/freemarker.jar"
 
@@ -161,6 +160,7 @@ then
       export INCLUDE="C:\Program Files\Debugging Tools for Windows (x64)\sdk\inc;$INCLUDE"
       export PATH="$PATH:/c/cygwin64/bin"
       export CONFIGURE_ARGS_FOR_ANY_PLATFORM="${CONFIGURE_ARGS_FOR_ANY_PLATFORM} --disable-ccache"
+      export BUILD_ARGS="${BUILD_ARGS} --freetype-version 2.9.2"
       TOOLCHAIN_VERSION="2017"
     elif [ "${JAVA_TO_BUILD}" == "${JDK9_VERSION}" ]
     then
