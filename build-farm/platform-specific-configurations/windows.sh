@@ -172,9 +172,11 @@ then
     elif [ "${JAVA_TO_BUILD}" == "${JDK11_VERSION}" ]
     then
       TOOLCHAIN_VERSION="2017"
+      export BUILD_ARGS="${BUILD_ARGS} --skip-freetype"
     elif [ "$JAVA_FEATURE_VERSION" -gt 11 ]
     then
       TOOLCHAIN_VERSION="2019"
+      export BUILD_ARGS="${BUILD_ARGS} --skip-freetype"
     fi
 
     CUDA_VERSION=9.0
