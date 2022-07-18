@@ -349,7 +349,10 @@ function parseConfigurationArguments() {
         "--vendor" | "-ve" )
         BUILD_CONFIG[VENDOR]="$1"; shift;;
 
-        "--version"  | "-v" )
+        "--vendor-version")
+        BUILD_CONFIG[VENDOR_VERSION]="$1"; shift;;
+
+        "--version" | "-v" )
         setOpenJdkVersion "$1"
         setDockerVolumeSuffix "$1"; shift;;
 
@@ -581,6 +584,7 @@ function configDefaults() {
 
   # Used in 'release' file for jdk8u
   BUILD_CONFIG[VENDOR]=${BUILD_CONFIG[VENDOR]:-"Undefined Vendor"}
+  BUILD_CONFIG[VENDOR_VERSION]=${BUILD_CONFIG[VENDOR_VERSION]:-""}
 }
 
 # Declare the map of build configuration that we're going to use

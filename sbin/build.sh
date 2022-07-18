@@ -385,9 +385,13 @@ configureVersionStringParameter() {
       # Not a release build so add date suffix
       derivedOpenJdkMetadataVersion="${derivedOpenJdkMetadataVersion}-${dateSuffix}"
     fi
-    addConfigureArg "--with-vendor-version-string=" "${BUILD_CONFIG[VENDOR_VERSION]:-}${derivedOpenJdkMetadataVersion}"
+
     if [ "${BUILD_CONFIG[BUILD_VARIANT]}" == "${BUILD_VARIANT_TEMURIN}" ]; then
       addConfigureArg "--with-vendor-version-string=" "${BUILD_CONFIG[VENDOR_VERSION]:-"Temurin"}-${derivedOpenJdkMetadataVersion}"
+    elif [ "${BUILD_CONFIG[BUILD_VARIANT]}" == "${BUILD_VARIANT_OPENJ9}" ] && [ -n "${BUILD_CONFIG[VENDOR_VERSION]}" ]; then
+      addConfigureArg "--with-vendor-version-string=" "${BUILD_CONFIG[VENDOR_VERSION]}"
+    else
+      addConfigureArg "--with-vendor-version-string=" "${BUILD_CONFIG[VENDOR_VERSION]:-}${derivedOpenJdkMetadataVersion}"
     fi
   fi
 
@@ -1174,6 +1178,7 @@ createNoticeFile() {
 setPlistValueForMacOS() {
   local DIRECTORY="${1}"
   local TYPE="${2}"
+  local JAVA_LOC="${DIRECTORY}/Contents/home/bin/java"
 
   # Only perform these steps for Eclipse Adoptium jdk8 builds
   if [[ "${BUILD_CONFIG[OPENJDK_CORE_VERSION]}" == "${JDK8_CORE_VERSION}" ]] && [[ "${BUILD_CONFIG[VENDOR]}" == "Eclipse Adoptium" ]]; then
@@ -1184,8 +1189,6 @@ setPlistValueForMacOS() {
     MAJOR_VERSION="${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}"
 
     if [[ "${BUILD_CONFIG[OS_KERNEL_NAME]}" == "darwin" ]]; then
-
-      local JAVA_LOC="${DIRECTORY}/Contents/home/bin/java"
       local FULL_VERSION=$($JAVA_LOC -XshowSettings:properties -version 2>&1 | grep 'java.runtime.version' | sed 's/^.*= //' | tr -d '\r')
 
       case "${BUILD_CONFIG[BUILD_VARIANT]}" in
@@ -1228,6 +1231,96 @@ setPlistValueForMacOS() {
       /usr/libexec/PlistBuddy -c "Add :JavaVM:JVMCapabilities:1 string JNI" "${DIRECTORY}/Contents/Info.plist"
       /usr/libexec/PlistBuddy -c "Add :JavaVM:JVMCapabilities:2 string BundledApp" "${DIRECTORY}/Contents/Info.plist"
     fi
+  elif [[ "${BUILD_CONFIG[OS_KERNEL_NAME]}" == "darwin" ]] && [[ "${BUILD_CONFIG[VENDOR]}" == "IBM Corporation" ]]; then
+    MAJOR_VERSION="${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}"
+    PACKAGE_NAME=$($JAVA_LOC -XshowSettings:properties -version 2>&1 | grep 'java.runtime.name' | sed 's/^.*= //' | tr -d '\r')
+    VENDOR_NAME="semeru"
+    VENDOR_VERSION_STRING="${BUILD_CONFIG[VENDOR_VERSION]}"
+
+    if [[ "$PACKAGE_NAME" == *"Open Edition" ]] ; then
+      # bundle id, e.g. com.ibm.semeru.open.8.jdk
+      IDENTIFIER="com.ibm.${VENDOR_NAME}.open.${MAJOR_VERSION}.${TYPE}"
+    elif [[ "$PACKAGE_NAME" == *"Certified Edition" ]] ; then
+      IDENTIFIER="com.ibm.${VENDOR_NAME}.certified.${MAJOR_VERSION}.${TYPE}"
+    else
+      echo "Detected incorrect 'java.runtime.name': ${PACKAGE_NAME}!"
+      exit -1
+    fi
+
+    case $TYPE in
+      jre) BUNDLE="${PACKAGE_NAME} (JRE)" ;;
+      jdk) BUNDLE="${PACKAGE_NAME}" ;;
+    esac
+
+    # see  https://eclipse-openj9.github.io/openj9-docs/openj9_support/
+    if [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -eq 8 ]; then
+      MACOSX_VERSION_MIN="10.10.0"
+    elif [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -eq 11 ]; then
+      MACOSX_VERSION_MIN="10.11.0"
+    elif [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -eq 17 ]; then
+      MACOSX_VERSION_MIN="10.14.0"
+    elif [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -ge 18 ]; then
+      MACOSX_VERSION_MIN="10.15.0"
+    fi
+
+    local OPENJDK_VERSION=$(getOpenJdkVersion)
+
+    if [ -z "${VENDOR_VERSION_STRING}" ]; then
+      if [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -eq 8 ]; then
+        # infer from OpenJDK version: convert jdk8u342-b06 to 8.0.342.0 (four period-separated integers)
+        VENDOR_VERSION_STRING=$(echo ${OPENJDK_VERSION} | cut -c4- | sed 's/u/.0./;s/-b.*/.0/')
+      elif [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -ge 11 ]; then
+        # fetch java.vendor.version [= --with-vendor-version-string]
+        VENDOR_VERSION_STRING=$($JAVA_LOC -XshowSettings:properties -version 2>&1 | grep 'java.vendor.version' | sed 's/^.*= //' | tr -d '\r')
+      fi
+    fi
+
+    # vendor version is expected to be four period-separated integers
+    # add .0 padding up to 4 positions (nightly builds)
+    SHORT_VENDOR_VERSION=$(echo ${VENDOR_VERSION_STRING} | sed 's/+.*/.0.0.0/' | cut -f 1,2,3,4 -d".")
+    # strip trailing zero
+    SHORT_VENDOR_VERSION=${SHORT_VENDOR_VERSION%.0}
+
+    echo "VENDOR_VERSION_STRING: ${VENDOR_VERSION_STRING}"
+    echo "SHORT_VENDOR_VERSION: ${SHORT_VENDOR_VERSION}"
+
+    # extract build number from OpenJDK version
+    if [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -eq 8 ]; then
+      # extract build number, no leading zero from jdk8u342-b06
+      BUNDLE_VERSION=$(echo ${OPENJDK_VERSION} | cut -f 2 -d"-" | sed 's/^b0*//')
+    elif [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -ge 11 ]; then
+      # extract build number from 11.0.1+7
+      BUNDLE_VERSION=$(echo ${OPENJDK_VERSION} | cut -f 2 -d"+")
+    fi
+
+    /usr/libexec/PlistBuddy -c "Set :CFBundleGetInfoString ${BUNDLE} ${VENDOR_VERSION_STRING}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier ${IDENTIFIER}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleName ${BUNDLE} ${MAJOR_VERSION}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUNDLE_VERSION}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :JavaVM:JVMMinimumSystemVersion ${MACOSX_VERSION_MIN}" "${DIRECTORY}/Contents/Info.plist"
+
+    if [ "${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}" -eq 8 ]; then
+      mkdir -p "${DIRECTORY}/Contents/Home/bundle/Libraries"
+      if [ -f "${DIRECTORY}/Contents/Home/lib/server/libjvm.dylib" ]; then
+        cp "${DIRECTORY}/Contents/Home/lib/server/libjvm.dylib" "${DIRECTORY}/Contents/Home/bundle/Libraries/libserver.dylib"
+      else
+        cp "${DIRECTORY}/Contents/Home/jre/lib/server/libjvm.dylib" "${DIRECTORY}/Contents/Home/bundle/Libraries/libserver.dylib"
+      fi
+
+      if [ "$TYPE" == "jre" ]; then
+        /usr/libexec/PlistBuddy -c "Add :JavaVM:JVMCapabilities array" "${DIRECTORY}/Contents/Info.plist"
+        /usr/libexec/PlistBuddy -c "Add :JavaVM:JVMCapabilities:0 string CommandLine" "${DIRECTORY}/Contents/Info.plist"
+      fi
+
+      # Fix comes from https://apple.stackexchange.com/a/211033 to associate JAR files
+      /usr/libexec/PlistBuddy -c "Add :JavaVM:JVMCapabilities:1 string JNI" "${DIRECTORY}/Contents/Info.plist"
+      /usr/libexec/PlistBuddy -c "Add :JavaVM:JVMCapabilities:2 string BundledApp" "${DIRECTORY}/Contents/Info.plist"
+    fi
+
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${SHORT_VENDOR_VERSION}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUNDLE_VERSION}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :JavaVM:JVMPlatformVersion ${SHORT_VENDOR_VERSION}" "${DIRECTORY}/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :JavaVM:JVMVersion ${SHORT_VENDOR_VERSION}" "${DIRECTORY}/Contents/Info.plist"
   fi
 }
 
