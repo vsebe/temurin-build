@@ -1177,7 +1177,7 @@ createNoticeFile() {
   # Only perform these steps for EF builds
   if [[ "${BUILD_CONFIG[VENDOR]}" == "Eclipse Adoptium" ]]; then
     if [[ "${BUILD_CONFIG[OS_KERNEL_NAME]}" == "darwin" ]]; then
-      HOME_DIR="${DIRECTORY}/Contents/home/"
+      HOME_DIR="${DIRECTORY}/Contents/Home/"
     else
       HOME_DIR="${DIRECTORY}"
     fi
@@ -1200,6 +1200,8 @@ setPlistValueForMacOS() {
     MAJOR_VERSION="${BUILD_CONFIG[OPENJDK_FEATURE_NUMBER]}"
 
     if [[ "${BUILD_CONFIG[OS_KERNEL_NAME]}" == "darwin" ]]; then
+
+      local JAVA_LOC="${DIRECTORY}/Contents/Home/bin/java"
       local FULL_VERSION=$($JAVA_LOC -XshowSettings:properties -version 2>&1 | grep 'java.runtime.version' | sed 's/^.*= //' | tr -d '\r')
 
       case "${BUILD_CONFIG[BUILD_VARIANT]}" in
